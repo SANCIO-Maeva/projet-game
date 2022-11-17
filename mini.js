@@ -173,74 +173,29 @@ gameOverM.visible = false;
 //////////////////////////////////     VARIABLES    ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
+let moveLaser1 = false;
+let moveLaser2 = false;
 let isGameOver = false;
-let direction = 5;
+let direction = 2;
 let lives = 3;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////     FUNCTION    ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * Player Move
- */
 
-view.onKeyDown = function (event) {
-  if (event.key == "up") {
-    playerGroup.position.y -= 20;
-  }
-  if (event.key == "down") {
-    playerGroup.position.y += 20;
-  }
-  if (event.key == "left") {
-    playerGroup.position.x -= 20;
-  }
-  if (event.key == "right") {
-    playerGroup.position.x += 20;
-  }
+///////////////////////////////////////////////////////////////////////////
+////////////////////////     Laser Enemy Interact    //////////////////////
+///////////////////////////////////////////////////////////////////////////
 
-  /**
-   * Laser Player
-   */
-  if (event.key == "space") {
-    const laser = new Raster({ source: "img/PNG/Lasers/laserBlue14.png" });
-    laser.position = new Point(playerGroup.position.x, view.size.height - 150);
-    laser.scale(0.7);
+function gameOver() {
+  isGameOver = true;
+  gameOverM.visible = false;
+}
 
-    const centerLaser = new Point(
-      playerGroup.position.x,
-      view.size.height - 150
-    );
-    const circleLaser = new Path.Circle(centerLaser, 10);
-    circleLaser.strokeColor = "blue";
-    circleLaser.strokeWidth = 1;
-
-    const laserGroup = new Group();
-
-    laserGroup.addChild(laser);
-    laserGroup.addChild(circleLaser);
-
-    view.onFrame = function () {
-      laserGroup.position.y -= direction;
-      //console.log(laserGroup.position.y);
-    };
-  }
-  /*view.onFrame = function(){
-    if (centerCircle.intersects(rectBackground)) {
-    ;
-  }*/
-};
-
-/**
- * Laser Enemy
- */
 function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function gameOver() {
-  isGameOver = true;
-  gameOverM.visible = true;
-}
 const laserenemy = new Raster({ source: "img/PNG/Lasers/laserRed16.png" });
 laserenemy.position = new Point(
   enemyGroup11.position.x,
@@ -261,7 +216,10 @@ laserGroupEn.addChild(circleLaserE);
 view.onFrame = function () {
   if (isGameOver) return;
 
-  laserGroupEn.position.y += direction;
+  if (moveLaser2) {
+    laserGroupEn.position.y += direction;
+  }
+  moveLaser2 = true;
 
   if (laserGroupEn.position.y > view.size.height) {
     laserGroupEn.position = enemy11.position;
@@ -270,7 +228,73 @@ view.onFrame = function () {
     lives = lives - 1;
     console.log(lives);
   }
+  if (lives == 2) {
+    live3.visible = false;
+  }
+  if (lives == 1) {
+    live2.visible = false;
+  }
+  if (lives == 0) {
+    live1.visible = false;
+  }
   if (lives == 0) {
     gameOver();
+    gameOverM.visible = true;
   }
+};
+
+///////////////////////////////////////////////////////////////////////////
+////////////////////////     Player Interact    ///////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+view.onKeyDown = function (event) {
+  if (event.key == "up") {
+    playerGroup.position.y -= 20;
+  }
+  if (event.key == "down") {
+    playerGroup.position.y += 20;
+  }
+  if (event.key == "left") {
+    playerGroup.position.x -= 20;
+  }
+  if (event.key == "right") {
+    playerGroup.position.x += 20;
+  }
+  if (event.key == "space") {
+    const laser = new Raster({ source: "img/PNG/Lasers/laserBlue14.png" });
+    laser.position = new Point(playerGroup.position.x, view.size.height - 150);
+    laser.scale(0.7);
+
+    const centerLaser = new Point(
+      playerGroup.position.x,
+      view.size.height - 150
+    );
+    const circleLaser = new Path.Circle(centerLaser, 10);
+    circleLaser.strokeColor = "blue";
+    circleLaser.strokeWidth = 1;
+    circleLaser.visible = true;
+
+    const laserGroup = new Group();
+
+    laserGroup.addChild(laser);
+    laserGroup.addChild(circleLaser);
+
+    view.onFrame = function () {
+      if (moveLaser1) {
+        laserGroup.position.y -= direction;
+      }
+      moveLaser1 = true;
+      if (circleLaser.intersects(circle11)) {
+        enemyGroup11.visible = false;
+      }
+      if (circleLaser.intersects(circleLaserE)) {
+        laserGroupEn.visible = false;
+        laserGroup.visible = false;
+      }
+    };
+  }
+  /*view.onFrame = function () {
+    if (playerGroup.intersects(rectBackground)) {
+    }
+  };*/
 };
